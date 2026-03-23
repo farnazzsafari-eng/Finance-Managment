@@ -1,0 +1,150 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 220px;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+}
+
+.sidebar-header {
+  margin-bottom: 30px;
+}
+
+.sidebar-header h2 {
+  margin: 0 0 12px;
+  font-size: 1.4rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.sidebar-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #a8d8ea;
+}
+
+.sidebar-avatar-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #16213e;
+  border: 2px solid #a8d8ea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #a8d8ea;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.user-badge {
+  background: #16213e;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: #a8d8ea;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-title {
+  font-size: 0.7rem;
+  color: #888;
+  padding-left: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.advisor-badge {
+  background: #f39c12;
+  color: #1a1a2e;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-align: center;
+  margin-top: 6px;
+}
+
+.advisor-banner {
+  background: #fff3cd;
+  color: #856404;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  border: 1px solid #ffc107;
+}
+
+.nav-links {
+  list-style: none;
+  padding: 0;
+  flex: 1;
+}
+
+.nav-links li {
+  margin-bottom: 4px;
+}
+
+.nav-links a {
+  display: block;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: #ccc;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  background: #16213e;
+  color: #fff;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid #555;
+  color: #ccc;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #e74c3c;
+  color: #fff;
+  border-color: #e74c3c;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 220px;
+  padding: 24px;
+  background: #f5f6fa;
+  min-height: 100vh;
+}

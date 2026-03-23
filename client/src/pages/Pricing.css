@@ -1,0 +1,154 @@
+.pricing-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.pricing-page h1 {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.pricing-subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 32px;
+  font-size: 0.95rem;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.plan-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  position: relative;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.plan-card.current {
+  border-color: #1a1a2e;
+}
+
+.plan-card.pro {
+  background: linear-gradient(135deg, #f8f9ff, #fff);
+}
+
+.plan-ribbon {
+  position: absolute;
+  top: -1px;
+  right: 20px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 0 0 6px 6px;
+  text-transform: uppercase;
+}
+
+.plan-header {
+  margin-bottom: 20px;
+}
+
+.plan-header h2 {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.price-amount {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.price-period {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  flex: 1;
+}
+
+.plan-features li {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.88rem;
+  color: #333;
+}
+
+.plan-features li::before {
+  content: '\2713  ';
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.plan-features li.disabled {
+  color: #bbb;
+  text-decoration: line-through;
+}
+
+.plan-features li.disabled::before {
+  content: '\2717  ';
+  color: #ccc;
+}
+
+.plan-badge {
+  text-align: center;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f0f0f0;
+  color: #666;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.plan-badge.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.btn-subscribe {
+  width: 100%;
+  padding: 12px;
+  background: #1a1a2e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-subscribe:hover {
+  background: #16213e;
+}
+
+.btn-subscribe:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.subscription-info {
+  text-align: center;
+  color: #666;
+  font-size: 0.85rem;
+  font-style: italic;
+}

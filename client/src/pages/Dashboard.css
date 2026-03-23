@@ -1,0 +1,135 @@
+.dashboard .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.dashboard .page-header h1 { margin: 0; }
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.card {
+  background: #fff;
+  padding: 18px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.card h3 { margin: 0 0 6px; font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+.card p { margin: 0; font-size: 1.5rem; font-weight: 700; }
+.card.income p { color: #2ecc71; }
+.card.expense p { color: #e74c3c; }
+.card.balance p { color: #3498db; }
+.card.total-balance {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+}
+.card.total-balance h3 { color: #8ebbff; }
+.card.total-balance p { color: #fff; font-size: 1.6rem; }
+
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.charts-row.single { grid-template-columns: 1fr; }
+
+.chart-container {
+  background: #fff;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.chart-container h3 { margin: 0 0 12px; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+.chart-header { display: flex; justify-content: space-between; align-items: center; }
+
+.back-btn {
+  padding: 3px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #f5f5f5;
+  font-size: 12px;
+  cursor: pointer;
+  margin-right: 6px;
+}
+.back-btn:hover { background: #e0e0e0; }
+
+.no-data { text-align: center; color: #aaa; padding: 40px 0; }
+
+/* Category bars */
+.category-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+.cat-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+.cat-bar-row.clickable { cursor: pointer; border-radius: 6px; padding: 4px 6px; }
+.cat-bar-row.clickable:hover { background: #f8f9fa; }
+.cat-bar-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 180px;
+  flex-shrink: 0;
+}
+.cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.cat-name { font-size: 13px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drill-arrow { color: #bbb; font-size: 16px; font-weight: bold; }
+.cat-bar-track { flex: 1; height: 16px; background: #f0f0f0; border-radius: 8px; overflow: hidden; }
+.cat-bar-fill { height: 100%; border-radius: 8px; transition: width 0.4s ease; min-width: 3px; }
+.cat-bar-value { display: flex; gap: 8px; min-width: 100px; justify-content: flex-end; flex-shrink: 0; }
+.cat-amount { font-size: 13px; font-weight: 600; color: #333; }
+.cat-pct { font-size: 12px; color: #999; min-width: 30px; text-align: right; }
+.cat-count { font-size: 11px; color: #999; }
+
+/* Stat list */
+.stat-list { display: flex; flex-direction: column; gap: 6px; }
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+.stat-item .green { color: #2ecc71; font-weight: 600; }
+.stat-item .red { color: #e74c3c; font-weight: 600; }
+
+/* Category detail table */
+.cat-details-table { margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee; }
+.cat-details-table h4 { margin: 0 0 8px; font-size: 13px; color: #666; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.detail-table th { text-align: left; padding: 5px 8px; border-bottom: 1px solid #eee; color: #888; font-size: 10px; text-transform: uppercase; }
+.detail-table td { padding: 4px 8px; border-bottom: 1px solid #f8f8f8; }
+.detail-table tr:hover { background: #fafbfc; }
+.cat-bar-row.active { background: #f0f4ff; border-radius: 6px; }
+
+/* Net Worth */
+.net-worth-card {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  padding: 24px;
+  border-radius: 14px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+.net-worth-card h3 { color: #8ebbff; margin: 0 0 8px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+.net-worth-card p { margin: 0 0 12px; font-size: 2.2rem; font-weight: 800; }
+.net-worth-card p.positive { color: #2ecc71; }
+.net-worth-card p.negative { color: #e74c3c; }
+.nw-breakdown { display: flex; justify-content: center; gap: 20px; font-size: 13px; color: #8ebbff; }
+.owner-tag { font-size: 10px; color: #999; background: #f0f0f0; padding: 1px 6px; border-radius: 8px; margin-left: 4px; }
+.note-tag { font-size: 10px; color: #888; font-style: italic; margin-left: 4px; }
+.total-row { background: #eef5ff !important; font-weight: 600; }
+.stat-item .blue { color: #3498db; font-weight: 600; }
+
+.loading { text-align: center; padding: 60px; color: #aaa; font-size: 1.2rem; }

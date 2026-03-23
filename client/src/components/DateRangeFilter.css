@@ -1,0 +1,68 @@
+.date-range-filter {
+  margin-bottom: 20px;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.presets {
+  display: flex;
+  gap: 4px;
+  background: #f0f2f5;
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.preset-btn {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.preset-btn:hover {
+  background: #e0e0e0;
+}
+
+.preset-btn.active {
+  background: #1a1a2e;
+  color: white;
+  font-weight: 600;
+}
+
+.custom-dates {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.custom-dates input[type="date"] {
+  padding: 7px 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  background: white;
+}
+
+.date-sep {
+  color: #999;
+  font-size: 13px;
+}
+
+.owner-select {
+  padding: 7px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  background: white;
+  min-width: 120px;
+}

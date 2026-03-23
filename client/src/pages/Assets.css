@@ -1,0 +1,117 @@
+.assets-page h1 { margin-bottom: 4px; }
+.assets-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* Net Worth Banner */
+.net-worth-banner {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+}
+.nw-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.nw-label { font-size: 1.1rem; opacity: 0.8; }
+.nw-amount { font-size: 2rem; font-weight: 700; }
+.nw-amount.positive { color: #2ecc71; }
+.nw-amount.negative { color: #e74c3c; }
+.nw-cad { font-size: 0.9rem; opacity: 0.6; }
+.nw-breakdown {
+  display: flex;
+  gap: 32px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding-top: 16px;
+}
+.nw-item { display: flex; flex-direction: column; gap: 4px; }
+.nw-item-label { font-size: 0.8rem; opacity: 0.6; }
+.nw-item .positive { color: #2ecc71; font-weight: 600; }
+.nw-item .negative { color: #e74c3c; font-weight: 600; }
+
+/* Sections */
+.section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.section h2 { font-size: 1.1rem; margin: 0 0 16px; }
+
+.owner-section { margin-bottom: 20px; }
+.owner-section h3 {
+  font-size: 0.95rem;
+  color: #333;
+  margin: 0 0 8px;
+  display: flex;
+  justify-content: space-between;
+}
+.owner-total { color: #27ae60; }
+
+/* Table */
+.assets-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.assets-table th {
+  background: #f8f9fa;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 0.75rem;
+  color: #666;
+  text-transform: uppercase;
+  border-bottom: 2px solid #eee;
+}
+.assets-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.85rem;
+}
+.assets-table tr:hover { background: #fafbfc; }
+
+.label-cell { display: flex; flex-direction: column; gap: 2px; }
+.item-label { font-weight: 500; }
+.item-note { font-size: 0.75rem; color: #999; }
+.amount-value { font-weight: 600; cursor: pointer; }
+.amount-value:hover { text-decoration: underline; }
+.positive { color: #27ae60; }
+.negative { color: #e74c3c; }
+.cad-value { color: #666; font-size: 0.82rem; }
+
+.total-row { background: #f8f9fa; }
+.total-row td { font-weight: 600; border-top: 2px solid #ddd; }
+
+.row-liability td { background: #fef5f5; }
+
+/* Inline edit */
+.edit-inline { display: flex; align-items: center; gap: 4px; }
+.edit-input {
+  width: 100px;
+  padding: 4px 8px;
+  border: 2px solid #3498db;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+.clickable { cursor: pointer; }
+
+/* Buttons from Transactions */
+.btn-primary { background: #1a1a2e; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+.btn-primary:hover { background: #16213e; }
+.btn-sm { padding: 4px 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 0.8rem; }
+.btn-danger { color: #e74c3c; border-color: #e74c3c; }
+.btn-xs { padding: 2px 6px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+.btn-save { background: #d5f5e3; color: #27ae60; }
+.btn-cancel { background: #fadbd8; color: #e74c3c; }
+
+/* Modal (reuse from Transactions) */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal { background: #fff; padding: 28px; border-radius: 16px; width: 520px; max-height: 90vh; overflow-y: auto; }
+.modal h2 { margin: 0 0 20px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: #666; }
+.form-grid input, .form-grid select { padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.modal-actions button { padding: 8px 20px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; }

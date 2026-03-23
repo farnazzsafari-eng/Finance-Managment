@@ -1,0 +1,82 @@
+.accounts-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.header-actions select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.account-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid #3498db;
+}
+
+.account-card.credit {
+  border-left-color: #e74c3c;
+}
+
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.account-header h3 { margin: 0; }
+
+.card-badge {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.card-badge.debit { background: #d5f5e3; color: #27ae60; }
+.card-badge.credit { background: #fadbd8; color: #e74c3c; }
+
+.account-owner { color: #888; margin: 4px 0; font-size: 0.9rem; }
+.account-digits { color: #555; font-family: monospace; margin: 4px 0; }
+.account-nick { color: #aaa; font-size: 0.85rem; margin: 4px 0; }
+
+.accounts-page .modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.accounts-page .modal label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.accounts-page .modal input,
+.accounts-page .modal select {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
