@@ -1,11 +1,14 @@
-.import-page { max-width: 800px; }
-.import-page h1 { margin-bottom: 4px; }
-.subtitle { color: #888; margin-bottom: 24px; font-size: 0.9rem; }
+.import-page {
+  max-width: 640px;
+  margin: 0 auto;
+}
+.import-page h1 { margin-bottom: 4px; text-align: center; }
+.subtitle { color: #888; margin-bottom: 24px; font-size: 0.9rem; text-align: center; }
 
 .import-form {
   background: #fff;
   border-radius: 12px;
-  padding: 24px;
+  padding: 28px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
@@ -50,18 +53,18 @@
   justify-content: center;
   border: 2px dashed #ccc;
   border-radius: 12px;
-  padding: 32px 20px;
+  padding: 28px 20px;
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
 }
 .file-drop:hover { border-color: #3498db; background: #f8fbff; }
 .file-input { display: none; }
-.drop-text { display: flex; flex-direction: column; gap: 6px; color: #888; }
-.drop-icon { font-size: 2rem; }
+.drop-text { display: flex; flex-direction: column; gap: 6px; color: #888; font-size: 0.88rem; }
+.drop-icon { font-size: 1.6rem; }
 .drop-hint { font-size: 0.75rem; color: #aaa; }
 
-.file-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.file-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .file-tag {
   padding: 6px 12px;
   background: #e8f5e9;
@@ -70,15 +73,16 @@
   color: #2e7d32;
 }
 
-/* Import button */
+/* Import button — standard size */
 .btn-import {
-  width: 100%;
-  padding: 14px;
+  display: block;
+  margin: 0 auto;
+  padding: 10px 32px;
   background: #1a1a2e;
   color: #fff;
   border: none;
-  border-radius: 10px;
-  font-size: 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
@@ -87,7 +91,10 @@
 .btn-import:disabled { opacity: 0.4; cursor: default; }
 
 /* Results */
-.results-section { margin-top: 24px; }
+.results-section {
+  max-width: 640px;
+  margin: 24px auto 0;
+}
 .results-section h2 { font-size: 1.1rem; margin-bottom: 12px; }
 
 .result-card {
@@ -103,7 +110,7 @@
 .result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .result-icon { font-size: 1.2rem; }
 
-.result-stats { display: flex; gap: 24px; margin-bottom: 8px; }
+.result-stats { display: flex; gap: 24px; margin-bottom: 8px; justify-content: center; }
 .stat { display: flex; flex-direction: column; align-items: center; }
 .stat-num { font-size: 1.4rem; font-weight: 700; color: #1a1a2e; }
 .stat-label { font-size: 0.75rem; color: #888; }
@@ -119,7 +126,8 @@
   padding: 40px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  margin-top: 20px;
+  max-width: 640px;
+  margin: 20px auto 0;
 }
 .subscription-gate h2 { font-size: 1.3rem; margin-bottom: 8px; }
 .subscription-gate p { color: #666; margin-bottom: 20px; }
