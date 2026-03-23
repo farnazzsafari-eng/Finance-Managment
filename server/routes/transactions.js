@@ -97,35 +97,52 @@ router.get('/summary', auth, async (req, res) => {
   const dateMatch = buildDateMatch(req.query);
   if (dateMatch) matchStage.date = dateMatch;
 
-  // Exclude transfer categories from income/expense totals (they are internal movements)
-  const transferCats = ['Transfer', 'Transfers', 'Internal Transfer', 'Fees & Charges'];
-  const noTransferMatch = { ...matchStage, category: { $nin: transferCats } };
+  // Internal Transfer = shown separately, NOT counted in income/expense
+  const internalCats = ['Internal Transfer'];
+  const realMatch = { ...matchStage, category: { $nin: internalCats } };
 
-  const [byCategory, byBank, byCardType, totals] = await Promise.all([
+  const [byCategory, byBank, byCardType, realTotals, internalTotals] = await Promise.all([
+    // Real expenses by category (no internal transfers)
     Transaction.aggregate([
-      { $match: { ...matchStage, type: 'expense', category: { $nin: transferCats } } },
+      { $match: { ...matchStage, type: 'expense', category: { $nin: internalCats } } },
       { $group: { _id: '$category', total: { $sum: '$amount' }, count: { $sum: 1 } } },
       { $sort: { total: -1 } },
     ]),
+    // Real expenses by bank
     Transaction.aggregate([
-      { $match: { ...matchStage, type: 'expense', category: { $nin: transferCats } } },
+      { $match: { ...matchStage, type: 'expense', category: { $nin: internalCats } } },
       { $group: { _id: '$bank', total: { $sum: '$amount' } } },
       { $sort: { total: -1 } },
     ]),
+    // Real expenses by card type
     Transaction.aggregate([
-      { $match: { ...matchStage, type: 'expense', category: { $nin: transferCats } } },
+      { $match: { ...matchStage, type: 'expense', category: { $nin: internalCats } } },
       { $group: { _id: '$cardType', total: { $sum: '$amount' } } },
     ]),
+    // Real income/expense totals (no internal transfers)
     Transaction.aggregate([
-      { $match: noTransferMatch },
+      { $match: realMatch },
       { $group: { _id: '$type', total: { $sum: '$amount' } } },
+    ]),
+    // Internal transfer totals (shown separately)
+    Transaction.aggregate([
+      { $match: { ...matchStage, category: { $in: internalCats } } },
+      { $group: { _id: '$type', total: { $sum: '$amount' }, count: { $sum: 1 } } },
     ]),
   ]);
 
-  const totalIncome = totals.find((t) => t._id === 'income')?.total || 0;
-  const totalExpense = totals.find((t) => t._id === 'expense')?.total || 0;
+  const totalIncome = realTotals.find((t) => t._id === 'income')?.total || 0;
+  const totalExpense = realTotals.find((t) => t._id === 'expense')?.total || 0;
+  const internalIn = internalTotals.find((t) => t._id === 'income')?.total || 0;
+  const internalOut = internalTotals.find((t) => t._id === 'expense')?.total || 0;
+  const internalCount = internalTotals.reduce((s, t) => s + (t.count || 0), 0);
 
-  res.json({ totalIncome, totalExpense, balance: totalIncome - totalExpense, byCategory, byBank, byCardType });
+  res.json({
+    totalIncome, totalExpense,
+    balance: totalIncome - totalExpense,
+    internalTransfers: { in: internalIn, out: internalOut, net: internalIn - internalOut, count: internalCount },
+    byCategory, byBank, byCardType,
+  });
 });
 
 // Overall balance (all-time, no date filter, excludes transfers)

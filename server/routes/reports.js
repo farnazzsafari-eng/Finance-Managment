@@ -4,8 +4,8 @@ const auth = require('../middleware/auth');
 const mongoose = require('mongoose');
 const router = express.Router();
 
-// Categories to ALWAYS exclude from income/expense calculations
-const EXCLUDED_CATEGORIES = ['Transfer', 'Transfers', 'Internal Transfer', 'Fees & Charges'];
+// Internal transfer categories — shown separately, NOT excluded
+const INTERNAL_CATEGORIES = ['Internal Transfer'];
 
 function toObjectId(id) {
   return mongoose.Types.ObjectId.createFromHexString(id);
@@ -29,7 +29,7 @@ function buildDateMatch(query) {
 }
 
 function baseFilter(query, extraMatch = {}) {
-  const matchStage = { category: { $nin: EXCLUDED_CATEGORIES }, ...extraMatch };
+  const matchStage = { ...extraMatch };
   if (query.owner) matchStage.owner = toObjectId(query.owner);
   if (query.householdId) matchStage.household = toObjectId(query.householdId);
   const dateMatch = buildDateMatch(query);
@@ -37,7 +37,7 @@ function baseFilter(query, extraMatch = {}) {
   return matchStage;
 }
 
-// Monthly report — excludes internal transfers
+// Monthly report — includes everything, labels internal transfers separately
 router.get('/monthly', auth, async (req, res) => {
   const matchStage = baseFilter(req.query);
 
@@ -56,9 +56,9 @@ router.get('/monthly', auth, async (req, res) => {
   res.json(report);
 });
 
-// Per-person spending — excludes internal transfers
+// Per-person spending — real expenses only (no internal transfers)
 router.get('/by-person', auth, async (req, res) => {
-  const matchStage = baseFilter(req.query, { type: 'expense' });
+  const matchStage = baseFilter(req.query, { type: 'expense', category: { $nin: INTERNAL_CATEGORIES } });
 
   const report = await Transaction.aggregate([
     { $match: matchStage },
@@ -77,9 +77,9 @@ router.get('/by-person', auth, async (req, res) => {
   res.json(report);
 });
 
-// Per-card spending — excludes internal transfers
+// Per-card spending — real expenses only
 router.get('/by-card', auth, async (req, res) => {
-  const matchStage = baseFilter(req.query, { type: 'expense' });
+  const matchStage = baseFilter(req.query, { type: 'expense', category: { $nin: INTERNAL_CATEGORIES } });
 
   const report = await Transaction.aggregate([
     { $match: matchStage },
@@ -89,10 +89,10 @@ router.get('/by-card', auth, async (req, res) => {
   res.json(report);
 });
 
-// Top merchants/stores — excludes internal transfers
+// Top merchants/stores — real expenses only
 router.get('/top-merchants', auth, async (req, res) => {
   const { limit } = req.query;
-  const matchStage = baseFilter(req.query, { type: 'expense' });
+  const matchStage = baseFilter(req.query, { type: 'expense', category: { $nin: INTERNAL_CATEGORIES } });
 
   const report = await Transaction.aggregate([
     { $match: matchStage },
@@ -111,9 +111,9 @@ router.get('/top-merchants', auth, async (req, res) => {
   res.json(report);
 });
 
-// Savings rate (monthly) — excludes internal transfers
+// Savings rate — real income vs real expenses (no internal transfers)
 router.get('/savings-rate', auth, async (req, res) => {
-  const matchStage = baseFilter(req.query);
+  const matchStage = baseFilter(req.query, { category: { $nin: INTERNAL_CATEGORIES } });
 
   const trend = await Transaction.aggregate([
     { $match: matchStage },
@@ -145,9 +145,9 @@ router.get('/savings-rate', auth, async (req, res) => {
   res.json(result);
 });
 
-// Cash flow (daily) — excludes internal transfers
+// Cash flow — real income/expenses only
 router.get('/cash-flow', auth, async (req, res) => {
-  const matchStage = baseFilter(req.query);
+  const matchStage = baseFilter(req.query, { category: { $nin: INTERNAL_CATEGORIES } });
 
   const daily = await Transaction.aggregate([
     { $match: matchStage },
@@ -179,13 +179,13 @@ router.get('/cash-flow', auth, async (req, res) => {
   res.json(result);
 });
 
-// Year-over-year comparison — excludes internal transfers
+// Year-over-year comparison — real income/expenses only
 router.get('/year-over-year', auth, async (req, res) => {
   const { owner, year1, year2 } = req.query;
   const y1 = parseInt(year1) || new Date().getFullYear() - 1;
   const y2 = parseInt(year2) || new Date().getFullYear();
 
-  const matchStage = { category: { $nin: EXCLUDED_CATEGORIES } };
+  const matchStage = { category: { $nin: INTERNAL_CATEGORIES } };
   if (owner) matchStage.owner = toObjectId(owner);
   matchStage.date = {
     $gte: new Date(Math.min(y1, y2), 0, 1),
@@ -218,9 +218,9 @@ router.get('/year-over-year', auth, async (req, res) => {
   res.json({ year1: y1, year2: y2, data: result });
 });
 
-// Average expenses report
+// Average expenses report — real expenses only
 router.get('/averages', auth, async (req, res) => {
-  const matchStage = baseFilter(req.query, { type: 'expense' });
+  const matchStage = baseFilter(req.query, { type: 'expense', category: { $nin: INTERNAL_CATEGORIES } });
 
   const data = await Transaction.aggregate([
     { $match: matchStage },
@@ -233,7 +233,6 @@ router.get('/averages', auth, async (req, res) => {
     },
   ]);
 
-  // Calculate per-category monthly averages
   const categoryMonths = {};
   data.forEach(d => {
     const cat = d._id.category;
@@ -252,7 +251,6 @@ router.get('/averages', auth, async (req, res) => {
     perTransactionAverage: data.total / data.count,
   })).sort((a, b) => b.monthlyAverage - a.monthlyAverage);
 
-  // Overall average
   const allMonths = new Set();
   let totalSpent = 0;
   data.forEach(d => { allMonths.add(`${d._id.year}-${d._id.month}`); totalSpent += d.total; });
