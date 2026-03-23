@@ -53,6 +53,8 @@ export default function Transactions() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [serverTotals, setServerTotals] = useState({ income: 0, expense: 0, net: 0 });
+  const [sortField, setSortField] = useState('date');
+  const [sortDir, setSortDir] = useState('desc');
   const [inlineEditId, setInlineEditId] = useState(null);
   const [inlineCategory, setInlineCategory] = useState('');
   const [inlineSubCategory, setInlineSubCategory] = useState('');
@@ -130,6 +132,29 @@ export default function Transactions() {
     setTransactions((prev) => prev.filter((t) => t._id !== id));
   };
 
+  // Client-side sorting
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  };
+
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    let va = a[sortField], vb = b[sortField];
+    if (sortField === 'date') { va = new Date(va); vb = new Date(vb); }
+    if (sortField === 'amount') { va = Number(va); vb = Number(vb); }
+    if (sortField === 'owner') { va = a.owner?.name || ''; vb = b.owner?.name || ''; }
+    if (typeof va === 'string') { va = va.toLowerCase(); vb = (vb || '').toLowerCase(); }
+    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const sortIcon = (field) => sortField === field ? (sortDir === 'asc' ? ' ▲' : ' ▼') : '';
+
   // Totals from server (across ALL matching transactions, not just current page)
   const totalIncome = serverTotals.income;
   const totalExpense = serverTotals.expense;
@@ -192,20 +217,20 @@ export default function Transactions() {
         <table>
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Description</th>
-              <th>Amount</th>
-              <th>Type</th>
-              <th>Category</th>
-              <th>Sub-Category</th>
-              <th>Bank</th>
+              <th className="sortable" onClick={() => handleSort('date')}>Date{sortIcon('date')}</th>
+              <th className="sortable" onClick={() => handleSort('description')}>Description{sortIcon('description')}</th>
+              <th className="sortable" onClick={() => handleSort('amount')}>Amount{sortIcon('amount')}</th>
+              <th className="sortable" onClick={() => handleSort('type')}>Type{sortIcon('type')}</th>
+              <th className="sortable" onClick={() => handleSort('category')}>Category{sortIcon('category')}</th>
+              <th className="sortable" onClick={() => handleSort('subCategory')}>Sub-Cat{sortIcon('subCategory')}</th>
+              <th className="sortable" onClick={() => handleSort('bank')}>Bank{sortIcon('bank')}</th>
               <th>Card</th>
-              <th>Owner</th>
+              <th className="sortable" onClick={() => handleSort('owner')}>Owner{sortIcon('owner')}</th>
               {canWrite && <th></th>}
             </tr>
           </thead>
           <tbody>
-            {transactions.map((t) => (
+            {sortedTransactions.map((t) => (
               <tr key={t._id} className={t.category === 'Internal Transfer' ? 'row-transfer' : ''}>
                 <td>{new Date(t.date).toLocaleDateString()}</td>
                 <td className="desc-cell" title={t.description}>{t.description}</td>

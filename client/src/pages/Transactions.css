@@ -180,6 +180,15 @@ tr:hover { background: #fafbfc; }
   cursor: pointer;
 }
 
+/* Sortable headers */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.sortable:hover {
+  background: #e8ecef;
+}
+
 /* Pagination */
 .pagination {
   display: flex;

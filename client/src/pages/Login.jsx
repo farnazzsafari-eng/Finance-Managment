@@ -5,7 +5,7 @@ import { login, register, joinHousehold } from '../services/api';
 import './Login.css';
 
 export function Login() {
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { loginUser } = useAuth();
@@ -15,7 +15,7 @@ export function Login() {
     e.preventDefault();
     setError('');
     try {
-      const res = await login(name, password);
+      const res = await login(email, password);
       loginUser(res.data.token, res.data.user);
       navigate('/');
     } catch {
@@ -29,7 +29,7 @@ export function Login() {
         <h1>💰 Finance Manager</h1>
         <p>Sign in to your account</p>
         <form onSubmit={handleSubmit}>
-          <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+          <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           {error && <div className="error">{error}</div>}
           <button type="submit">Sign In</button>

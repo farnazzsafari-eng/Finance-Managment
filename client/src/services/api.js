@@ -11,7 +11,7 @@ api.interceptors.request.use((config) => {
 });
 
 // Auth
-export const login = (name, password) => api.post('/users/login', { name, password });
+export const login = (email, password) => api.post('/users/login', { email, password });
 export const register = (data) => api.post('/users/register', data);
 export const joinHousehold = (data) => api.post('/users/join', data);
 export const createInvite = (data) => api.post('/users/invite', data);
