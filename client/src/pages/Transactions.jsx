@@ -388,6 +388,7 @@ export default function Transactions() {
 
   const totalIncome = serverTotals.income;
   const totalExpense = serverTotals.expense;
+  const totalInternal = serverTotals.internal || 0;
 
   const availableSubCategories = filters.category
     ? (CATEGORY_MAP[filters.category] || [])
@@ -440,6 +441,7 @@ export default function Transactions() {
               <option value="">All Types</option>
               <option value="income">Income</option>
               <option value="expense">Expense</option>
+              <option value="internal">Internal Transfer</option>
             </select>
           </>
         )}
@@ -453,6 +455,7 @@ export default function Transactions() {
           <div className="totals-bar">
             <span className="total-income">Income: ${fmt(totalIncome)}</span>
             <span className="total-expense">Expenses: ${fmt(totalExpense)}</span>
+            <span className="total-internal" style={{ color: '#9b59b6' }}>Internal: ${fmt(totalInternal)}</span>
             <span className="total-balance" style={{ color: totalIncome - totalExpense >= 0 ? '#27ae60' : '#e74c3c' }}>
               Net: ${fmt(totalIncome - totalExpense)}
             </span>
