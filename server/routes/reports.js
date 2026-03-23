@@ -58,7 +58,7 @@ router.get('/monthly', auth, async (req, res) => {
 
 // Per-person spending — real expenses only (no internal transfers)
 router.get('/by-person', auth, async (req, res) => {
-  const matchStage = baseFilter(req.query, { type: 'expense', category: { $nin: INTERNAL_CATEGORIES } });
+  const matchStage = baseFilter(req.query, { type: 'expense', type: { $nin: ['internal'] } });
 
   const report = await Transaction.aggregate([
     { $match: matchStage },
@@ -79,7 +79,7 @@ router.get('/by-person', auth, async (req, res) => {
 
 // Per-card spending — real expenses only
 router.get('/by-card', auth, async (req, res) => {
-  const matchStage = baseFilter(req.query, { type: 'expense', category: { $nin: INTERNAL_CATEGORIES } });
+  const matchStage = baseFilter(req.query, { type: 'expense', type: { $nin: ['internal'] } });
 
   const report = await Transaction.aggregate([
     { $match: matchStage },
@@ -92,7 +92,7 @@ router.get('/by-card', auth, async (req, res) => {
 // Top merchants/stores — real expenses only
 router.get('/top-merchants', auth, async (req, res) => {
   const { limit } = req.query;
-  const matchStage = baseFilter(req.query, { type: 'expense', category: { $nin: INTERNAL_CATEGORIES } });
+  const matchStage = baseFilter(req.query, { type: 'expense', type: { $nin: ['internal'] } });
 
   const report = await Transaction.aggregate([
     { $match: matchStage },
@@ -113,7 +113,7 @@ router.get('/top-merchants', auth, async (req, res) => {
 
 // Savings rate — real income vs real expenses (no internal transfers)
 router.get('/savings-rate', auth, async (req, res) => {
-  const matchStage = baseFilter(req.query, { category: { $nin: INTERNAL_CATEGORIES } });
+  const matchStage = baseFilter(req.query, { type: { $nin: ['internal'] } });
 
   const trend = await Transaction.aggregate([
     { $match: matchStage },
@@ -131,7 +131,7 @@ router.get('/savings-rate', auth, async (req, res) => {
     const key = `${t._id.year}-${String(t._id.month).padStart(2, '0')}`;
     if (!monthMap[key]) monthMap[key] = { year: t._id.year, month: t._id.month, label: key, income: 0, expense: 0 };
     if (t._id.type === 'income') monthMap[key].income = t.total;
-    else monthMap[key].expense = t.total;
+    else if (t._id.type === 'expense') monthMap[key].expense = t.total;
   });
 
   const result = Object.values(monthMap)
@@ -147,7 +147,7 @@ router.get('/savings-rate', auth, async (req, res) => {
 
 // Cash flow — real income/expenses only
 router.get('/cash-flow', auth, async (req, res) => {
-  const matchStage = baseFilter(req.query, { category: { $nin: INTERNAL_CATEGORIES } });
+  const matchStage = baseFilter(req.query, { type: { $nin: ['internal'] } });
 
   const daily = await Transaction.aggregate([
     { $match: matchStage },
@@ -164,7 +164,7 @@ router.get('/cash-flow', auth, async (req, res) => {
   daily.forEach((d) => {
     if (!dayMap[d._id.date]) dayMap[d._id.date] = { date: d._id.date, income: 0, expense: 0 };
     if (d._id.type === 'income') dayMap[d._id.date].income = d.total;
-    else dayMap[d._id.date].expense = d.total;
+    else if (d._id.type === 'expense') dayMap[d._id.date].expense = d.total;
   });
 
   let cumulative = 0;
@@ -185,7 +185,7 @@ router.get('/year-over-year', auth, async (req, res) => {
   const y1 = parseInt(year1) || new Date().getFullYear() - 1;
   const y2 = parseInt(year2) || new Date().getFullYear();
 
-  const matchStage = { category: { $nin: INTERNAL_CATEGORIES } };
+  const matchStage = { type: { $nin: ['internal'] } };
   if (owner) matchStage.owner = toObjectId(owner);
   matchStage.date = {
     $gte: new Date(Math.min(y1, y2), 0, 1),
@@ -220,7 +220,7 @@ router.get('/year-over-year', auth, async (req, res) => {
 
 // Average expenses report — real expenses only
 router.get('/averages', auth, async (req, res) => {
-  const matchStage = baseFilter(req.query, { type: 'expense', category: { $nin: INTERNAL_CATEGORIES } });
+  const matchStage = baseFilter(req.query, { type: 'expense', type: { $nin: ['internal'] } });
 
   const data = await Transaction.aggregate([
     { $match: matchStage },

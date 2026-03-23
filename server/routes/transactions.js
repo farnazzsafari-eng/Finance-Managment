@@ -243,13 +243,14 @@ router.get('/monthly-trend', auth, async (req, res) => {
     { $sort: { '_id.year': 1, '_id.month': 1 } },
   ]);
 
-  // Build results grouped by year-month
+  // Build results grouped by year-month (exclude internal from income/expense)
   const monthMap = {};
   trend.forEach((t) => {
     const key = `${t._id.year}-${String(t._id.month).padStart(2, '0')}`;
-    if (!monthMap[key]) monthMap[key] = { year: t._id.year, month: t._id.month, label: key, income: 0, expense: 0 };
+    if (!monthMap[key]) monthMap[key] = { year: t._id.year, month: t._id.month, label: key, income: 0, expense: 0, internal: 0 };
     if (t._id.type === 'income') monthMap[key].income = t.total;
-    else monthMap[key].expense = t.total;
+    else if (t._id.type === 'expense') monthMap[key].expense = t.total;
+    else if (t._id.type === 'internal') monthMap[key].internal = t.total;
   });
 
   res.json(Object.values(monthMap).sort((a, b) => a.label.localeCompare(b.label)));
