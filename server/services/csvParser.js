@@ -42,21 +42,30 @@ const CATEGORY_KEYWORDS = {
     'chatgpt', 'openai', '10web', 'framer.com', 'dominion s', 'wp*dominion'],
   Education: ['immigration can', 'world education', 'wes ', 'tuition', 'course', 'udemy'],
   // Internal transfers (between own accounts or family) — excluded from income/expense
+  // Covers all Canadian bank credit card payment patterns
   'Internal Transfer': [
-    'cibc visa', 'td visa', 'rbc visa', 'amex card',
+    // Credit card payments (all banks)
+    'cibc visa', 'td visa', 'rbc visa', 'bmo visa', 'scotia visa',
+    'amex card', 'amex cards', 'mastercard',
+    'payment thank you', 'payment - thank you', 'paiement', 'merci',
+    'pre-authorized payment', 'pre-authorized debit', 'preauthorized debit',
+    'pre-authorized payment - thank you', 'scotiabank payment',
+    'online banking payment', 'bill payment', 'mb-cibc visa',
+    'visa payment', 'credit card payment', 'card payment',
+    'payback with points', 'cashback', 'remise en argent',
+    // Inter-account transfers
     'internet transfer', 'internet deposit',
-    'pts to:', 'pts frm:', 'jx360 tfr', 'open account',
+    'pts to:', 'pts frm:', 'jx360 tfr', 'jd450 tfr', 'open account',
     'bonus interest', 'chq offer', 'sav offer',
     'credit memo', 'debit memo', 'eft debit reversal',
-    'pre-authorized debit cibc', 'preauthorized debit',
     'atm deposit', 'deposit ibb', 'atm withdrawal',
-    'scotiabank payment', 'online banking payment', 'bill payment',
-    'payment thank you', 'payment - thank you', 'paiement',
-    'payback with points', 'cashback', 'remise en argent',
     'transfer_tf', 'moneymove', 'aft_in',
     'correction uber', 'purchase reversal',
     'td canada trust toronto',
     'laptop', 'gif m',
+    // BMO / Tangerine / Simplii patterns
+    'bmo mc', 'tangerine mc', 'simplii visa',
+    'autopay', 'auto pay', 'balance transfer',
   ],
   // External transfers (real money in/out) — counted as income/expense
   Transfers: ['e-transfer', 'e-tfr', 'e_trfin', 'e_trfout', 'eft',
