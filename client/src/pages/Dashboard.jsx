@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getSummary, getMonthlyTrend, getOverallBalance, getUsers, getCategoryDetails, getBalances } from '../services/api';
+import { getSummary, getMonthlyTrend, getOverallBalance, getUsers, getCategoryDetails, getBalances, getCategoryDetailReport } from '../services/api';
 import { groupByParentCategory, CATEGORY_HIERARCHY } from '../utils/categoryMapping';
 import DateRangeFilter, { getPresetDates } from '../components/DateRangeFilter';
 import BankLogo from '../components/BankLogo';
@@ -10,6 +10,60 @@ import {
 import './Dashboard.css';
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const TRACKED_CATEGORIES = [
+  { emoji: '⚡', label: 'Electricity', category: 'Utilities', subCategory: 'Electricity' },
+  { emoji: '⛽', label: 'Gas/Fuel', category: 'Gas', subCategory: '' },
+  { emoji: '🌐', label: 'Internet', category: 'Utilities', subCategory: 'Internet' },
+  { emoji: '📱', label: 'Phone', category: 'Utilities', subCategory: 'Phone' },
+  { emoji: '🏠', label: 'Rent', category: 'Housing/Rent', subCategory: '' },
+  { emoji: '🚬', label: 'Smoking/Vape', category: 'Shopping', subCategory: 'Smoking/Vape' },
+  { emoji: '📺', label: 'Subscriptions', category: 'Subscriptions', subCategory: '' },
+  { emoji: '🍷', label: 'Alcohol', category: 'Entertainment', subCategory: 'Alcohol' },
+  { emoji: '🛒', label: 'Costco', category: 'Groceries', subCategory: 'Costco' },
+];
+
+function TrackedExpenses({ startDate, endDate, owner }) {
+  const [data, setData] = useState({});
+
+  useEffect(() => {
+    TRACKED_CATEGORIES.forEach((tc) => {
+      getCategoryDetailReport({
+        category: tc.category,
+        subCategory: tc.subCategory || undefined,
+        startDate, endDate,
+        owner: owner || undefined,
+      }).then((r) => {
+        setData((prev) => ({ ...prev, [tc.label]: r.data }));
+      });
+    });
+  }, [startDate, endDate, owner]);
+
+  return (
+    <div className="tracked-expenses">
+      <h3>Tracked Expenses</h3>
+      <div className="tracked-grid">
+        {TRACKED_CATEGORIES.map((tc) => {
+          const d = data[tc.label];
+          return (
+            <div key={tc.label} className="tracked-card">
+              <div className="tracked-header">
+                <span className="tracked-emoji">{tc.emoji}</span>
+                <span className="tracked-label">{tc.label}</span>
+              </div>
+              <div className="tracked-amount">
+                ${(d?.total || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}
+              </div>
+              <div className="tracked-meta">
+                {d?.count || 0} txn &bull; avg ${(d?.average || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}/mo
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const initDates = getPresetDates('thisMonth');
@@ -76,6 +130,11 @@ export default function Dashboard() {
         <div className="card expense">
           <h3>Expenses</h3>
           <p>${summary.totalExpense.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+        </div>
+        <div className="card internal">
+          <h3>Internal Transfer</h3>
+          <p>${(summary.internalTransfers?.total || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+          <small>{summary.internalTransfers?.count || 0} transactions</small>
         </div>
         <div className="card balance">
           <h3>Period Balance</h3>
@@ -229,6 +288,8 @@ export default function Dashboard() {
           ) : <p className="no-data">No data</p>}
         </div>
       </div>
+
+      <TrackedExpenses startDate={startDate} endDate={endDate} owner={filterOwner} />
 
       {balances?.accounts?.length > 0 && (() => {
         const USD_RATE = 1.40;
