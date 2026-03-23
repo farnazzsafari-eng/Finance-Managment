@@ -98,7 +98,7 @@ router.get('/summary', auth, async (req, res) => {
   if (dateMatch) matchStage.date = dateMatch;
 
   // Exclude transfer categories from income/expense totals (they are internal movements)
-  const transferCats = ['Transfer', 'Transfers', 'Internal Transfer'];
+  const transferCats = ['Transfer', 'Transfers', 'Internal Transfer', 'Fees & Charges'];
   const noTransferMatch = { ...matchStage, category: { $nin: transferCats } };
 
   const [byCategory, byBank, byCardType, totals] = await Promise.all([
@@ -272,9 +272,26 @@ router.post('/bulk', auth, requireWriteAccess, async (req, res) => {
 
 // Update
 router.put('/:id', auth, requireWriteAccess, async (req, res) => {
-  const transaction = await Transaction.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  if (!transaction) return res.status(404).json({ error: 'Not found' });
-  res.json(transaction);
+  try {
+    // Only allow updating category and subCategory inline
+    const allowedFields = {};
+    if (req.body.category !== undefined) allowedFields.category = req.body.category;
+    if (req.body.subCategory !== undefined) allowedFields.subCategory = req.body.subCategory;
+
+    const transaction = await Transaction.findOneAndUpdate(
+      { _id: req.params.id, household: req.householdId },
+      { $set: allowedFields },
+      { new: true, runValidators: true }
+    );
+    if (!transaction) return res.status(404).json({ error: 'Not found' });
+
+    // Decrypt for response
+    const encKey = await req.getEncryptionKey();
+    const decrypted = decryptTransaction(transaction.toObject(), encKey);
+    res.json(decrypted);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // Delete
