@@ -15,7 +15,7 @@ const transactionSchema = new mongoose.Schema({
   date: { type: Date, required: true },
   description: { type: String, required: true },
   amount: { type: Number, required: true },
-  type: { type: String, enum: ['income', 'expense'], required: true },
+  type: { type: String, enum: ['income', 'expense', 'internal'], required: true },
   category: { type: String, enum: CATEGORIES, default: 'Other' },
   subCategory: { type: String, default: '' },
   source: { type: String, default: 'manual' }, // manual, csv-import, browser-import

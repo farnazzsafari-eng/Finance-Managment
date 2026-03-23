@@ -71,6 +71,7 @@ router.get('/', auth, async (req, res) => {
 
   const totalIncome = totals.find((t) => t._id === 'income')?.total || 0;
   const totalExpense = totals.find((t) => t._id === 'expense')?.total || 0;
+  const totalInternal = totals.find((t) => t._id === 'internal')?.total || 0;
 
   // Decrypt descriptions if household has encryption
   const encKey = await req.getEncryptionKey();
@@ -83,7 +84,7 @@ router.get('/', auth, async (req, res) => {
     totalCount,
     totalPages: Math.ceil(totalCount / limit),
     page,
-    totals: { income: totalIncome, expense: totalExpense, net: totalIncome - totalExpense },
+    totals: { income: totalIncome, expense: totalExpense, internal: totalInternal, net: totalIncome - totalExpense },
   });
 });
 
@@ -97,50 +98,46 @@ router.get('/summary', auth, async (req, res) => {
   const dateMatch = buildDateMatch(req.query);
   if (dateMatch) matchStage.date = dateMatch;
 
-  // Internal Transfer = shown separately, NOT counted in income/expense
-  const internalCats = ['Internal Transfer'];
-  const realMatch = { ...matchStage, category: { $nin: internalCats } };
-
-  const [byCategory, byBank, byCardType, realTotals, internalTotals] = await Promise.all([
-    // Real expenses by category (no internal transfers)
+  // 3 types: income, expense, internal
+  const [byCategory, byBank, byCardType, typeTotals, internalTotal] = await Promise.all([
+    // Real expenses by category
     Transaction.aggregate([
-      { $match: { ...matchStage, type: 'expense', category: { $nin: internalCats } } },
+      { $match: { ...matchStage, type: 'expense' } },
       { $group: { _id: '$category', total: { $sum: '$amount' }, count: { $sum: 1 } } },
       { $sort: { total: -1 } },
     ]),
     // Real expenses by bank
     Transaction.aggregate([
-      { $match: { ...matchStage, type: 'expense', category: { $nin: internalCats } } },
+      { $match: { ...matchStage, type: 'expense' } },
       { $group: { _id: '$bank', total: { $sum: '$amount' } } },
       { $sort: { total: -1 } },
     ]),
     // Real expenses by card type
     Transaction.aggregate([
-      { $match: { ...matchStage, type: 'expense', category: { $nin: internalCats } } },
+      { $match: { ...matchStage, type: 'expense' } },
       { $group: { _id: '$cardType', total: { $sum: '$amount' } } },
     ]),
-    // Real income/expense totals (no internal transfers)
+    // All type totals
     Transaction.aggregate([
-      { $match: realMatch },
-      { $group: { _id: '$type', total: { $sum: '$amount' } } },
-    ]),
-    // Internal transfer totals (shown separately)
-    Transaction.aggregate([
-      { $match: { ...matchStage, category: { $in: internalCats } } },
+      { $match: matchStage },
       { $group: { _id: '$type', total: { $sum: '$amount' }, count: { $sum: 1 } } },
+    ]),
+    // Internal transfer total
+    Transaction.aggregate([
+      { $match: { ...matchStage, type: 'internal' } },
+      { $group: { _id: null, total: { $sum: '$amount' }, count: { $sum: 1 } } },
     ]),
   ]);
 
-  const totalIncome = realTotals.find((t) => t._id === 'income')?.total || 0;
-  const totalExpense = realTotals.find((t) => t._id === 'expense')?.total || 0;
-  const internalIn = internalTotals.find((t) => t._id === 'income')?.total || 0;
-  const internalOut = internalTotals.find((t) => t._id === 'expense')?.total || 0;
-  const internalCount = internalTotals.reduce((s, t) => s + (t.count || 0), 0);
+  const totalIncome = typeTotals.find((t) => t._id === 'income')?.total || 0;
+  const totalExpense = typeTotals.find((t) => t._id === 'expense')?.total || 0;
+  const totalInternal = internalTotal[0]?.total || 0;
+  const internalCount = internalTotal[0]?.count || 0;
 
   res.json({
     totalIncome, totalExpense,
     balance: totalIncome - totalExpense,
-    internalTransfers: { in: internalIn, out: internalOut, net: internalIn - internalOut, count: internalCount },
+    internalTransfers: { total: totalInternal, count: internalCount },
     byCategory, byBank, byCardType,
   });
 });
@@ -148,7 +145,7 @@ router.get('/summary', auth, async (req, res) => {
 // Overall balance (all-time, no date filter, excludes transfers)
 router.get('/overall-balance', auth, async (req, res) => {
   const { owner } = req.query;
-  const matchStage = { category: { $nin: ['Transfer', 'Transfers', 'Internal Transfer'] } };
+  const matchStage = { type: { $in: ['income', 'expense'] } };
   if (req.householdId) matchStage.household = toObjectId(req.householdId);
   if (owner) matchStage.owner = toObjectId(owner);
 

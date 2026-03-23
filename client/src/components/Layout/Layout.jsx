@@ -37,6 +37,7 @@ export default function Layout() {
         <ul className="nav-links">
           <li><NavLink to="/">Dashboard</NavLink></li>
           <li><NavLink to="/transactions">Transactions</NavLink></li>
+          <li><NavLink to="/reports">Reports</NavLink></li>
           <li><NavLink to="/assets">Assets</NavLink></li>
           {!isAdvisor && <li><NavLink to="/import">Import</NavLink></li>}
           <li><NavLink to="/pricing">Pricing</NavLink></li>
