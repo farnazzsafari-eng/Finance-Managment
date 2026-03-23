@@ -22,28 +22,26 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    // Create household with encryption key
-    const encryptionKey = Household.generateEncryptionKey();
-    const household = await Household.create({
-      name: householdName || `${name}'s Family`,
-      admin: null, // will update after user creation
-      members: [],
-      encryptionKey,
-    });
-
-    // Create admin user
+    // Create user first (no household yet)
     const user = await User.create({
       name,
       email,
       password,
-      household: household._id,
       role: 'admin',
     });
 
-    // Update household admin
-    household.admin = user._id;
-    household.members.push(user._id);
-    await household.save();
+    // Create household with user as admin
+    const encryptionKey = Household.generateEncryptionKey();
+    const household = await Household.create({
+      name: householdName || `${name}'s Family`,
+      admin: user._id,
+      members: [user._id],
+      encryptionKey,
+    });
+
+    // Link user to household
+    user.household = household._id;
+    await user.save();
 
     const token = makeToken(user);
     res.status(201).json({
