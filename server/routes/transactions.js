@@ -288,13 +288,17 @@ router.post('/bulk', auth, requireWriteAccess, async (req, res) => {
 // Update
 router.put('/:id', auth, requireWriteAccess, async (req, res) => {
   try {
-    // Only allow updating category and subCategory inline
+    // Only allow updating category, subCategory, and type inline
     const allowedFields = {};
     if (req.body.category !== undefined) allowedFields.category = req.body.category;
     if (req.body.subCategory !== undefined) allowedFields.subCategory = req.body.subCategory;
+    if (req.body.type !== undefined) allowedFields.type = req.body.type;
+
+    const query = { _id: req.params.id };
+    if (req.householdId) query.household = toObjectId(req.householdId);
 
     const transaction = await Transaction.findOneAndUpdate(
-      { _id: req.params.id, household: req.householdId },
+      query,
       { $set: allowedFields },
       { new: true, runValidators: true }
     );
@@ -311,7 +315,9 @@ router.put('/:id', auth, requireWriteAccess, async (req, res) => {
 
 // Delete
 router.delete('/:id', auth, requireWriteAccess, async (req, res) => {
-  await Transaction.findByIdAndDelete(req.params.id);
+  const query = { _id: req.params.id };
+  if (req.householdId) query.household = toObjectId(req.householdId);
+  await Transaction.findOneAndDelete(query);
   res.json({ message: 'Deleted' });
 });
 
