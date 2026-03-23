@@ -6,7 +6,6 @@ import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Accounts from './pages/Accounts';
 import Reports from './pages/Reports';
-import Review from './pages/Review';
 import Assets from './pages/Assets';
 import Import from './pages/Import';
 import Settings from './pages/Settings';
@@ -41,7 +40,6 @@ function AppRoutes() {
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/accounts" element={<Accounts />} />
         <Route path="/reports" element={<Reports />} />
-        <Route path="/review" element={<WriteProtectedRoute><Review /></WriteProtectedRoute>} />
         <Route path="/assets" element={<Assets />} />
         <Route path="/import" element={<WriteProtectedRoute><Import /></WriteProtectedRoute>} />
         <Route path="/settings" element={<Settings />} />

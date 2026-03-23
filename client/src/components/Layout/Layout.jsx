@@ -41,7 +41,6 @@ export default function Layout() {
           <li><NavLink to="/reports">Reports</NavLink></li>
           <li><NavLink to="/assets">Assets</NavLink></li>
           {!isAdvisor && <li><NavLink to="/import">Import</NavLink></li>}
-          {!isAdvisor && <li><NavLink to="/review">Review</NavLink></li>}
           <li><NavLink to="/pricing">Pricing</NavLink></li>
           <li><NavLink to="/settings">Settings</NavLink></li>
         </ul>
