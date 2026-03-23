@@ -3,11 +3,15 @@ import { useAuth } from '../context/AuthContext';
 import {
   getHousehold, createInvite, createAdvisorInvite,
   updateHouseholdSettings, updateProfile, getSubscriptionStatus,
+  getAccounts, getUsers, createAccount, deleteAccount,
 } from '../services/api';
+import BankLogo from '../components/BankLogo';
 import './Settings.css';
 
+const BANKS = ['Wealthsimple', 'Scotia', 'TD', 'CIBC', 'RBC'];
+
 export default function Settings() {
-  const { user, isAdmin, isAdvisor, refreshUser } = useAuth();
+  const { user, isAdmin, isAdvisor, canWrite, refreshUser } = useAuth();
   const [household, setHousehold] = useState(null);
   const [inviteUrl, setInviteUrl] = useState('');
   const [inviteExpires, setInviteExpires] = useState('');
@@ -29,6 +33,17 @@ export default function Settings() {
   const [reminderEmail, setReminderEmail] = useState('');
   const [settingsSaved, setSettingsSaved] = useState(false);
 
+  // Accounts management
+  const [accounts, setAccounts] = useState([]);
+  const [acctUsers, setAcctUsers] = useState([]);
+  const [acctFilterOwner, setAcctFilterOwner] = useState('');
+  const [showAcctModal, setShowAcctModal] = useState(false);
+  const [acctForm, setAcctForm] = useState({ owner: '', bank: 'TD', type: 'debit', lastFourDigits: '', nickname: '' });
+
+  const loadAccounts = () => {
+    getAccounts(acctFilterOwner || undefined).then((res) => setAccounts(res.data));
+  };
+
   useEffect(() => {
     getHousehold().then((r) => {
       setHousehold(r.data);
@@ -42,7 +57,23 @@ export default function Settings() {
     getSubscriptionStatus()
       .then((r) => setSubscription(r.data))
       .catch(() => {});
+    getUsers().then((res) => setAcctUsers(res.data));
   }, []);
+
+  useEffect(() => { loadAccounts(); }, [acctFilterOwner]);
+
+  const handleSaveAccount = async (e) => {
+    e.preventDefault();
+    await createAccount(acctForm);
+    setShowAcctModal(false);
+    loadAccounts();
+  };
+
+  const handleDeleteAccount = async (id) => {
+    if (!confirm('Delete this account?')) return;
+    await deleteAccount(id);
+    loadAccounts();
+  };
 
   useEffect(() => {
     if (user) {
@@ -320,6 +351,81 @@ export default function Settings() {
           </p>
         )}
       </div>
+
+      {/* Accounts Section */}
+      <div className="section">
+        <div className="section-header-row">
+          <h2>Accounts</h2>
+          <div className="header-actions">
+            <select value={acctFilterOwner} onChange={(e) => setAcctFilterOwner(e.target.value)}>
+              <option value="">All Users</option>
+              {acctUsers.map((u) => <option key={u._id} value={u._id}>{u.name}</option>)}
+            </select>
+            {canWrite && (
+              <button className="btn-primary" onClick={() => { setAcctForm({ owner: acctUsers[0]?._id || '', bank: 'TD', type: 'debit', lastFourDigits: '', nickname: '' }); setShowAcctModal(true); }}>
+                + Add Account
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="accounts-grid">
+          {accounts.map((acc) => (
+            <div key={acc._id} className={`account-card ${acc.type}`}>
+              <div className="account-header">
+                <h3><BankLogo bank={acc.bank} size="sm" style={{ marginRight: '6px' }} />{acc.bank}</h3>
+                <span className={`card-badge ${acc.type}`}>{acc.type}</span>
+              </div>
+              <p className="account-owner">{acc.owner?.name}</p>
+              {acc.lastFourDigits && <p className="account-digits">**** {acc.lastFourDigits}</p>}
+              {acc.nickname && <p className="account-nick">{acc.nickname}</p>}
+              {canWrite && <button className="btn-sm btn-danger" onClick={() => handleDeleteAccount(acc._id)}>Remove</button>}
+            </div>
+          ))}
+          {accounts.length === 0 && <p className="no-data">No accounts found</p>}
+        </div>
+      </div>
+
+      {showAcctModal && (
+        <div className="modal-overlay" onClick={() => setShowAcctModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Add Account</h2>
+            <form onSubmit={handleSaveAccount}>
+              <label>
+                Owner
+                <select value={acctForm.owner} onChange={(e) => setAcctForm({ ...acctForm, owner: e.target.value })} required>
+                  <option value="">Select</option>
+                  {acctUsers.map((u) => <option key={u._id} value={u._id}>{u.name}</option>)}
+                </select>
+              </label>
+              <label>
+                Bank
+                <select value={acctForm.bank} onChange={(e) => setAcctForm({ ...acctForm, bank: e.target.value })}>
+                  {BANKS.map((b) => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </label>
+              <label>
+                Type
+                <select value={acctForm.type} onChange={(e) => setAcctForm({ ...acctForm, type: e.target.value })}>
+                  <option value="debit">Debit</option>
+                  <option value="credit">Credit</option>
+                </select>
+              </label>
+              <label>
+                Last 4 Digits
+                <input value={acctForm.lastFourDigits} onChange={(e) => setAcctForm({ ...acctForm, lastFourDigits: e.target.value })} maxLength="4" />
+              </label>
+              <label>
+                Nickname
+                <input value={acctForm.nickname} onChange={(e) => setAcctForm({ ...acctForm, nickname: e.target.value })} />
+              </label>
+              <div className="modal-actions">
+                <button type="button" onClick={() => setShowAcctModal(false)}>Cancel</button>
+                <button type="submit" className="btn-primary">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div className="section">
         <h2>Security</h2>
