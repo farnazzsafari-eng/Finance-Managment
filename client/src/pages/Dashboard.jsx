@@ -25,6 +25,7 @@ const TRACKED_CATEGORIES = [
 
 function TrackedExpenses({ startDate, endDate, owner }) {
   const [data, setData] = useState({});
+  const [expanded, setExpanded] = useState(null);
 
   useEffect(() => {
     TRACKED_CATEGORIES.forEach((tc) => {
@@ -37,7 +38,10 @@ function TrackedExpenses({ startDate, endDate, owner }) {
         setData((prev) => ({ ...prev, [tc.label]: r.data }));
       });
     });
+    setExpanded(null);
   }, [startDate, endDate, owner]);
+
+  const fmt = (v) => '$' + (v || 0).toLocaleString('en-US', { minimumFractionDigits: 0 });
 
   return (
     <div className="tracked-expenses">
@@ -45,18 +49,60 @@ function TrackedExpenses({ startDate, endDate, owner }) {
       <div className="tracked-grid">
         {TRACKED_CATEGORIES.map((tc) => {
           const d = data[tc.label];
+          const isOpen = expanded === tc.label;
           return (
-            <div key={tc.label} className="tracked-card">
+            <div key={tc.label} className={`tracked-card ${isOpen ? 'expanded' : ''}`} onClick={() => setExpanded(isOpen ? null : tc.label)}>
               <div className="tracked-header">
                 <span className="tracked-emoji">{tc.emoji}</span>
                 <span className="tracked-label">{tc.label}</span>
+                <span className="tracked-arrow">{isOpen ? '▼' : '▶'}</span>
               </div>
-              <div className="tracked-amount">
-                ${(d?.total || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}
-              </div>
+              <div className="tracked-amount">{fmt(d?.total)}</div>
               <div className="tracked-meta">
-                {d?.count || 0} txn &bull; avg ${(d?.average || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}/mo
+                {d?.count || 0} txn &bull; avg {fmt(d?.average)}/mo
               </div>
+
+              {isOpen && d && (
+                <div className="tracked-detail" onClick={(e) => e.stopPropagation()}>
+                  {d.monthlyTotals?.length > 0 && (
+                    <div className="tracked-monthly">
+                      <h4>Monthly Breakdown</h4>
+                      <ResponsiveContainer width="100%" height={180}>
+                        <BarChart data={d.monthlyTotals}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" fontSize={11} />
+                          <YAxis fontSize={11} />
+                          <Tooltip formatter={(v) => fmt(v)} />
+                          <Bar dataKey="total" fill="#e74c3c" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                  {d.transactions?.length > 0 && (
+                    <div className="tracked-txns">
+                      <h4>Transactions ({d.transactions.length})</h4>
+                      <div className="tracked-table-wrap">
+                        <table className="tracked-table">
+                          <thead>
+                            <tr><th>Date</th><th>Description</th><th>Amount</th><th>Card</th><th>Owner</th></tr>
+                          </thead>
+                          <tbody>
+                            {d.transactions.slice(0, 50).map((t, i) => (
+                              <tr key={i}>
+                                <td>{new Date(t.date).toLocaleDateString('en-CA')}</td>
+                                <td>{t.description?.substring(0, 40)}</td>
+                                <td className="red">{fmt(t.amount)}</td>
+                                <td>{t.bank} {t.cardType}</td>
+                                <td>{t.owner?.name || '-'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
