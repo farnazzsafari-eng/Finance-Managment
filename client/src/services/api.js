@@ -51,6 +51,7 @@ export const getTopMerchants = (params) => api.get('/reports/top-merchants', { p
 export const getSavingsRate = (params) => api.get('/reports/savings-rate', { params });
 export const getCashFlow = (params) => api.get('/reports/cash-flow', { params });
 export const getYearOverYear = (params) => api.get('/reports/year-over-year', { params });
+export const getCategoryDetailReport = (params) => api.get('/reports/category-detail', { params });
 
 // Import
 export const importCSV = (data) => api.post('/import/csv', data);

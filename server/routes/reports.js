@@ -265,4 +265,53 @@ router.get('/averages', auth, async (req, res) => {
   });
 });
 
+// Category detail report — transactions + monthly totals for a specific category/subCategory
+router.get('/category-detail', auth, async (req, res) => {
+  const { category, subCategory, startDate, endDate, owner } = req.query;
+
+  const matchStage = {};
+  if (owner) matchStage.owner = toObjectId(owner);
+  const dateMatch = buildDateMatch(req.query);
+  if (dateMatch) matchStage.date = dateMatch;
+
+  // Match by category or subCategory
+  if (category) matchStage.category = category;
+  if (subCategory) matchStage.subCategory = subCategory;
+
+  // Get all matching transactions
+  const transactions = await Transaction.find(matchStage)
+    .populate('owner', 'name')
+    .sort({ date: -1 })
+    .limit(500)
+    .lean();
+
+  // Monthly totals aggregation
+  const monthlyTotals = await Transaction.aggregate([
+    { $match: matchStage },
+    {
+      $group: {
+        _id: { year: { $year: '$date' }, month: { $month: '$date' } },
+        total: { $sum: '$amount' },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1 } },
+  ]);
+
+  const total = transactions.reduce((s, t) => s + t.amount, 0);
+  const count = transactions.length;
+  const monthCount = monthlyTotals.length;
+  const average = monthCount > 0 ? total / monthCount : 0;
+
+  const formattedMonthly = monthlyTotals.map((m) => ({
+    month: `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m._id.month - 1]} ${String(m._id.year).slice(2)}`,
+    total: m.total,
+    count: m.count,
+    year: m._id.year,
+    monthNum: m._id.month,
+  }));
+
+  res.json({ transactions, monthlyTotals: formattedMonthly, total, count, average });
+});
+
 module.exports = router;

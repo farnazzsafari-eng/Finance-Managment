@@ -3,6 +3,7 @@ import {
   getTransactions, getUsers, createTransaction, deleteTransaction, updateTransaction,
   getSavingsRate, getSummary, getByPersonReport, getByCardReport,
   getTopMerchants, getCashFlow, getYearOverYear, getCategoryDetails,
+  getCategoryDetailReport,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import BankLogo from '../components/BankLogo';
@@ -50,6 +51,7 @@ const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'S
 const REPORT_TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'categories', label: 'Categories' },
+  { key: 'catdetail', label: 'By Category Detail' },
   { key: 'person', label: 'By Person' },
   { key: 'card', label: 'By Card' },
   { key: 'merchants', label: 'Top Merchants' },
@@ -149,6 +151,63 @@ function parseTransferParties(description, type) {
 
 function titleCase(str) {
   return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Extract a clean merchant/person name from transaction description */
+function extractMerchant(description) {
+  if (!description) return '';
+  let d = description.trim();
+
+  // E-TRANSFER: extract person name
+  const eTransferName = d.match(/E-TRANSFER\s+\d+\s+(.+)/i);
+  if (eTransferName) return titleCase(eTransferName[1].trim());
+
+  const eTransferDirect = d.match(/E-TRANSFER\s+(?!\*{2,})([A-Z][A-Z\s]+)/i);
+  if (eTransferDirect && eTransferDirect[1].trim().length > 2) return titleCase(eTransferDirect[1].trim());
+
+  if (d.match(/E-TRANSFER|E-TFR/i)) return '';
+
+  // Payroll
+  if (d.match(/payroll/i)) return 'Employer';
+
+  // Internal transfers
+  if (d.match(/\bTF\b|\bTFR\b/i) && !d.match(/E-TFR/i)) return 'Own Account';
+
+  // Remove common prefixes
+  d = d.replace(/^(VISA|MC|INTERAC|POS|PRE-AUTH|PURCHASE|PAYMENT|RECURRING|PAY)\s+/i, '');
+  d = d.replace(/^(Internet Banking|Online Banking|Mobile Banking)\s+/i, '');
+
+  // Remove trailing location: city, province/state patterns
+  d = d.replace(/\s+([\w\s]+,\s*[A-Z]{2})\s*$/i, '');
+
+  // Remove trailing reference numbers, phone numbers, long digit strings
+  d = d.replace(/\s+\d{6,}.*$/g, '');
+  d = d.replace(/\s+[A-Z0-9]{8,}$/g, '');
+  d = d.replace(/\s+P[0-9A-F]{8,}/gi, '');
+
+  // Remove hash/pound codes
+  d = d.replace(/\s*#\d+/g, '');
+
+  // Remove trailing numbers (store numbers like "2244")
+  d = d.replace(/\s+\d{2,5}\s*$/g, '');
+
+  // Clean up extra whitespace
+  d = d.replace(/\s+/g, ' ').trim();
+
+  // If still too long or has junk, take first meaningful words
+  if (d.length > 30) {
+    d = d.split(/\s+/).slice(0, 3).join(' ');
+  }
+
+  return d ? titleCase(d) : '';
+}
+
+/** Build card label from bank + cardType */
+function cardLabel(bank, cardType) {
+  if (!bank && !cardType) return '-';
+  const b = bank || '';
+  const c = cardType ? (cardType.charAt(0).toUpperCase() + cardType.slice(1)) : '';
+  return `${b} ${c}`.trim();
 }
 
 export default function Transactions() {
@@ -412,8 +471,8 @@ export default function Transactions() {
                   <th className="sortable" onClick={() => handleSort('subCategory')}>Sub-Cat{sortIcon('subCategory')}</th>
                   {hasTransfers && <th>From</th>}
                   {hasTransfers && <th>To</th>}
-                  <th className="sortable" onClick={() => handleSort('bank')}>Bank{sortIcon('bank')}</th>
-                  <th>Card</th>
+                  <th className="sortable" onClick={() => handleSort('bank')}>Card{sortIcon('bank')}</th>
+                  <th>Paid To</th>
                   <th className="sortable" onClick={() => handleSort('owner')}>Owner{sortIcon('owner')}</th>
                   {canWrite && <th></th>}
                 </tr>
@@ -467,8 +526,8 @@ export default function Transactions() {
                       {hasTransfers && <td className="transfer-party">{isTransfer ? (parties.from || <span className="muted">--</span>) : ''}</td>}
                       {hasTransfers && <td className="transfer-party">{isTransfer ? (parties.to || <span className="muted">--</span>) : ''}</td>}
 
-                      <td>{t.bank ? <BankLogo bank={t.bank} size="sm" /> : '-'}</td>
-                      <td>{t.cardType || '-'}</td>
+                      <td title={cardLabel(t.bank, t.cardType)}>{t.bank ? <><BankLogo bank={t.bank} size="sm" /> <span className="card-type-label">{t.cardType ? t.cardType.charAt(0).toUpperCase() + t.cardType.slice(1) : ''}</span></> : '-'}</td>
+                      <td className="merchant-cell" title={extractMerchant(t.description)}>{extractMerchant(t.description) || <span className="muted">--</span>}</td>
                       <td>{t.owner?.name || '-'}</td>
                       {canWrite && (
                         <td>
@@ -512,6 +571,9 @@ export default function Transactions() {
                 dateParams={{ startDate: filters.startDate, endDate: filters.endDate, owner: filters.owner || undefined }}
                 onDrilldown={openDrilldown} />
             )}
+            {reportTab === 'catdetail' && (
+              <CategoryDetailTab dateParams={{ startDate: filters.startDate, endDate: filters.endDate, owner: filters.owner || undefined }} />
+            )}
             {reportTab === 'person' && <PersonTab data={personData} onDrilldown={openDrilldown} />}
             {reportTab === 'card' && <CardTab data={cardData} onDrilldown={openDrilldown} />}
             {reportTab === 'merchants' && <MerchantsTab data={merchants} onDrilldown={openDrilldown} />}
@@ -540,7 +602,7 @@ export default function Transactions() {
                   <table className="drilldown-table">
                     <thead>
                       <tr>
-                        <th>Date</th><th>Description</th><th>Amount</th><th>Bank</th><th>Owner</th>
+                        <th>Date</th><th>Description</th><th>Amount</th><th>Card</th><th>Paid To</th><th>Owner</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -549,7 +611,8 @@ export default function Transactions() {
                           <td>{new Date(t.date).toLocaleDateString()}</td>
                           <td className="desc-cell" title={t.description}>{t.description}</td>
                           <td className={t.type === 'income' ? 'amount-income' : 'amount-expense'}>${fmt(t.amount)}</td>
-                          <td>{t.bank ? <BankLogo bank={t.bank} size="sm" /> : '-'}</td>
+                          <td>{cardLabel(t.bank, t.cardType)}</td>
+                          <td className="merchant-cell">{extractMerchant(t.description) || '--'}</td>
                           <td>{t.owner?.name || '-'}</td>
                         </tr>
                       ))}
@@ -860,6 +923,136 @@ function YoYTab({ data, year1, year2, setYear1, setYear2 }) {
           <div className="mini-stat orange">{data.year1} Total<br /><strong>${data.data.reduce((s, d) => s + d[`${data.year1}_expense`], 0).toFixed(0)}</strong></div>
           <div className="mini-stat red">{data.year2} Total<br /><strong>${data.data.reduce((s, d) => s + d[`${data.year2}_expense`], 0).toFixed(0)}</strong></div>
         </div></div>) : <p className="no-data">Loading...</p>}
+    </div>
+  );
+}
+
+/* ===== CATEGORY DETAIL TAB ===== */
+
+const TRACKED_CATEGORIES = [
+  { emoji: '\u26A1', label: 'Electricity', filter: { category: 'Utilities', subCategory: 'Hydro/Electric' }, color: '#f1c40f' },
+  { emoji: '\u26FD', label: 'Gas/Fuel', filter: { category: 'Gas' }, color: '#e67e22' },
+  { emoji: '\uD83C\uDF10', label: 'Internet', filter: { category: 'Utilities', subCategory: 'Internet' }, color: '#3498db' },
+  { emoji: '\uD83D\uDCF1', label: 'Phone', filter: { category: 'Utilities', subCategory: 'Phone/Mobile' }, color: '#9b59b6' },
+  { emoji: '\uD83C\uDFE0', label: 'Rent', filter: { category: 'Housing/Rent' }, color: '#1abc9c' },
+  { emoji: '\uD83D\uDEAC', label: 'Smoking/Vape', filter: { category: 'Shopping', subCategory: 'Vape' }, color: '#95a5a6' },
+  { emoji: '\uD83D\uDCFA', label: 'Subscriptions', filter: { category: 'Subscriptions' }, color: '#e74c3c' },
+  { emoji: '\uD83C\uDF77', label: 'Alcohol', filter: { category: 'Entertainment', subCategory: 'Wine/Liquor' }, color: '#8e44ad' },
+  { emoji: '\uD83D\uDED2', label: 'Costco', filter: { category: 'Groceries', subCategory: 'Costco' }, color: '#2c3e50' },
+];
+
+function CategoryDetailTab({ dateParams }) {
+  const [cardData, setCardData] = useState({});
+  const [loading, setLoading] = useState({});
+  const [expanded, setExpanded] = useState(null);
+
+  useEffect(() => {
+    // Fetch summary data for all tracked categories
+    TRACKED_CATEGORIES.forEach((cat) => {
+      setLoading((prev) => ({ ...prev, [cat.label]: true }));
+      getCategoryDetailReport({ ...dateParams, ...cat.filter })
+        .then((res) => {
+          setCardData((prev) => ({ ...prev, [cat.label]: res.data }));
+          setLoading((prev) => ({ ...prev, [cat.label]: false }));
+        })
+        .catch(() => {
+          setCardData((prev) => ({ ...prev, [cat.label]: { transactions: [], monthlyTotals: [], total: 0, count: 0, average: 0 } }));
+          setLoading((prev) => ({ ...prev, [cat.label]: false }));
+        });
+    });
+  }, [dateParams.startDate, dateParams.endDate, dateParams.owner]);
+
+  const toggleExpand = (label) => {
+    setExpanded((prev) => (prev === label ? null : label));
+  };
+
+  return (
+    <div>
+      <div className="catdetail-grid">
+        {TRACKED_CATEGORIES.map((cat) => {
+          const data = cardData[cat.label];
+          const isLoading = loading[cat.label];
+          const isExpanded = expanded === cat.label;
+
+          return (
+            <div key={cat.label} className={`catdetail-card ${isExpanded ? 'catdetail-card-expanded' : ''}`}>
+              <div className="catdetail-card-header" onClick={() => toggleExpand(cat.label)} style={{ borderLeft: `4px solid ${cat.color}` }}>
+                <div className="catdetail-card-title">
+                  <span className="catdetail-emoji">{cat.emoji}</span>
+                  <span className="catdetail-name">{cat.label}</span>
+                </div>
+                {isLoading ? (
+                  <div className="catdetail-loading">Loading...</div>
+                ) : data ? (
+                  <div className="catdetail-card-stats">
+                    <div className="catdetail-total">${data.total.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <div className="catdetail-meta">
+                      <span>{data.count.toLocaleString()} txn</span>
+                      <span>Avg ${data.average.toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/mo</span>
+                    </div>
+                  </div>
+                ) : null}
+                {/* Mini sparkline */}
+                {data && data.monthlyTotals.length > 1 && !isExpanded && (
+                  <div className="catdetail-sparkline">
+                    <ResponsiveContainer width={120} height={32}>
+                      <BarChart data={data.monthlyTotals}>
+                        <Bar dataKey="total" fill={cat.color} radius={[2, 2, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+                <span className="catdetail-chevron">{isExpanded ? '\u25B2' : '\u25BC'}</span>
+              </div>
+
+              {isExpanded && data && (
+                <div className="catdetail-card-body">
+                  {/* Monthly bar chart */}
+                  {data.monthlyTotals.length > 0 && (
+                    <div className="catdetail-chart">
+                      <ResponsiveContainer width="100%" height={200}>
+                        <BarChart data={data.monthlyTotals}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" fontSize={11} />
+                          <YAxis fontSize={11} />
+                          <Tooltip formatter={(v) => `$${Number(v).toLocaleString('en-CA', { minimumFractionDigits: 2 })}`} />
+                          <Bar dataKey="total" name="Amount" fill={cat.color} radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+
+                  {/* Transaction list */}
+                  <div className="catdetail-txn-wrap">
+                    <table className="data-table compact">
+                      <thead>
+                        <tr>
+                          <th>Date</th><th>Description</th><th>Amount</th><th>Card</th><th>Paid To</th><th>Owner</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.transactions.map((t) => (
+                          <tr key={t._id}>
+                            <td>{new Date(t.date).toLocaleDateString()}</td>
+                            <td className="desc-cell" title={t.description}>{t.description}</td>
+                            <td className="amount-expense">${t.amount.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td>{cardLabel(t.bank, t.cardType)}</td>
+                            <td className="merchant-cell">{extractMerchant(t.description) || '--'}</td>
+                            <td>{t.owner?.name || '-'}</td>
+                          </tr>
+                        ))}
+                        {data.transactions.length === 0 && (
+                          <tr><td colSpan={6} className="no-data">No transactions found</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

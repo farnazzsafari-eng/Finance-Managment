@@ -436,3 +436,123 @@ tr:hover { background: #fafbfc; }
   border-bottom: 1px solid #f0f0f0;
   font-size: 0.82rem;
 }
+
+/* Card type label in table */
+.card-type-label {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+/* Merchant / Paid To cell */
+.merchant-cell {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+/* ===== Category Detail Tab ===== */
+.catdetail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
+}
+
+.catdetail-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.catdetail-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.catdetail-card-expanded {
+  grid-column: 1 / -1;
+}
+
+.catdetail-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.catdetail-card-header:hover {
+  background: #fafbfc;
+}
+
+.catdetail-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.catdetail-emoji {
+  font-size: 1.3rem;
+}
+
+.catdetail-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.catdetail-card-stats {
+  flex: 1;
+  text-align: right;
+}
+
+.catdetail-total {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #e74c3c;
+}
+
+.catdetail-meta {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 2px;
+}
+
+.catdetail-sparkline {
+  flex-shrink: 0;
+}
+
+.catdetail-chevron {
+  font-size: 0.7rem;
+  color: #bbb;
+  flex-shrink: 0;
+}
+
+.catdetail-loading {
+  flex: 1;
+  text-align: right;
+  color: #bbb;
+  font-size: 0.85rem;
+}
+
+.catdetail-card-body {
+  border-top: 1px solid #f0f0f0;
+  padding: 16px 18px;
+}
+
+.catdetail-chart {
+  margin-bottom: 16px;
+}
+
+.catdetail-txn-wrap {
+  max-height: 400px;
+  overflow-y: auto;
+}
